@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using AiBenchmarkAPI.Data;
 using AiBenchmarkAPI.Models;
+using Microsoft.EntityFrameworkCore;
+using AiBenchmarkAPI.Dtos;
 
 namespace AiBenchmarkAPI.Controllers;
 
@@ -18,17 +20,44 @@ public class SubjectsController : ControllerBase
     [HttpGet]
     public IActionResult GetSubjects()
     {
-        var subjects = _context.Subjects.ToList();
+        var subjects = _context.Subjects.Include(s => s.Topics).Select(subject => new SubjectDto
+        {
+            Id = subject.Id,
+            Name = subject.Name,
+            Description = subject.Description,
+
+            Topics = subject.Topics.Select(topic => new TopicDto
+            {
+                Id = topic.Id,
+                Name = topic.Name,
+                Description = topic.Description
+            }).ToList()
+        }).ToList();
+
         return Ok(subjects);
     }
 
     [HttpPost]
-    public IActionResult CreateSubject(Subject subject)
+    public IActionResult CreateSubject(CreateSubjectDto dto)
     {
+        var subject = new Subject
+        {
+            Name = dto.Name,
+            Description = dto.Description
+        };
         _context.Subjects.Add(subject);
         _context.SaveChanges();
-        
-        return Ok(subject);
+        var response = new SubjectDto
+        {
+            Id = subject.Id,
+            Name = subject.Name,
+            Description = subject.Description
+        };
+
+        return CreatedAtAction(
+            nameof(GetSubjects),
+            new { id = subject.Id },
+            response);
     }
 
     [HttpDelete("{id}")]
@@ -48,7 +77,7 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateSubject(int id, Subject updatedSubject)
+    public IActionResult UpdateSubject(int id, UpdateSubjectDto dto)
     {
         var subject = _context.Subjects.Find(id);
 
@@ -56,13 +85,18 @@ public class SubjectsController : ControllerBase
         {
             return NotFound();
         }
-
-        subject.Name = updatedSubject.Name;
-        subject.Description = updatedSubject.Description;
+        subject.Name = dto.Name;
+        subject.Description = dto.Description;
+        
 
         _context.SaveChanges();
-
-        return Ok(subject);
+        var response = new SubjectDto
+        {
+            Id = subject.Id,
+            Name = subject.Name,
+            Description = subject.Description
+        };
+        return Ok(response);
     }
 
     [HttpPatch("{id}")]

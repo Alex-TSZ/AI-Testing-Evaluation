@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using AiBenchmarkAPI.Data;
 using AiBenchmarkAPI.Models;
+using Microsoft.EntityFrameworkCore;
+using AiBenchmarkAPI.Dtos;
+using AiBenchmarkAPI.Mappers;
+using AiBenchmarkAPI.Services;
 
 namespace AiBenchmarkAPI.Controllers;
 
@@ -9,84 +13,77 @@ namespace AiBenchmarkAPI.Controllers;
 public class SubjectsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly SubjectService _subjectService;
 
-    public SubjectsController(ApplicationDbContext context)
+    public SubjectsController(ApplicationDbContext context, SubjectService subjectService)
     {
         _context = context;
+        _subjectService = subjectService;
     }
 
     [HttpGet]
-    public IActionResult GetSubjects()
+    public ActionResult<IEnumerable<SubjectDto>> GetSubjects()
     {
-        var subjects = _context.Subjects.ToList();
+        var subjects = _subjectService.GetAll();
         return Ok(subjects);
     }
 
-    [HttpPost]
-    public IActionResult CreateSubject(Subject subject)
+    [HttpGet("{id}")]
+    public IActionResult GetSubject(int id)
     {
-        _context.Subjects.Add(subject);
-        _context.SaveChanges();
-        
+        var subject = _subjectService.GetById(id);
+        if (subject == null)
+        {
+            return NotFound();
+        }
         return Ok(subject);
+    }
+
+    [HttpPost]
+    public IActionResult CreateSubject(CreateSubjectDto dto)
+    {
+        var response = _subjectService.Create(dto);
+        
+        return CreatedAtAction(
+            nameof(GetSubject),
+            new { id = response.Id },
+            response);
     }
 
     [HttpDelete("{id}")]
     public IActionResult DeleteSubject(int id)
     {
-        var subject = _context.Subjects.Find(id);
+        var deleted = _subjectService.Delete(id);
 
-        if (subject == null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        _context.Subjects.Remove(subject);
-        _context.SaveChanges();
-
         return NoContent();
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateSubject(int id, Subject updatedSubject)
+    public IActionResult UpdateSubject(int id, UpdateSubjectDto dto)
     {
-        var subject = _context.Subjects.Find(id);
+        var subject = _subjectService.Update(id, dto);
 
         if (subject == null)
         {
             return NotFound();
         }
-
-        subject.Name = updatedSubject.Name;
-        subject.Description = updatedSubject.Description;
-
-        _context.SaveChanges();
 
         return Ok(subject);
     }
 
     [HttpPatch("{id}")]
-    public IActionResult PatchSubject(int id, Subject patch)
+    public IActionResult PatchSubject(int id, PatchSubjectDto dto)
     {
-        var subject = _context.Subjects.Find(id);
+        var subject = _subjectService.Patch(id, dto);
 
         if (subject == null)
         {
             return NotFound();
         }
-
-        if (!string.IsNullOrEmpty(patch.Name))
-        {
-            subject.Name = patch.Name;
-        }
-
-        if (!string.IsNullOrEmpty(patch.Description))
-        {
-            subject.Description = patch.Description;
-        }
-
-        _context.SaveChanges();
-
         return Ok(subject);
     }
 }

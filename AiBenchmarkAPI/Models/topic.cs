@@ -1,9 +1,13 @@
 namespace AiBenchmarkAPI.Models;
-
-public class Subject
+public class Topic
 {
     public int Id { get; set; }
+
     public string Name { get; set; } = "";
+
     public string? Description { get; set; }
-    public ICollection<Topic> Topics { get; set; } = new List<Topic>();
+
+    public int SubjectId { get; set; }
+
+    public Subject? Subject { get; set; }
 }

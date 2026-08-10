@@ -11,4 +11,5 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Subject> Subjects { get; set; }
+    public DbSet<Topic> Topics { get; set; }
 }

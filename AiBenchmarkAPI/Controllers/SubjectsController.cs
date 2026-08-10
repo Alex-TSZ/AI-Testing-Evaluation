@@ -3,6 +3,8 @@ using AiBenchmarkAPI.Data;
 using AiBenchmarkAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using AiBenchmarkAPI.Dtos;
+using AiBenchmarkAPI.Mappers;
+using AiBenchmarkAPI.Services;
 
 namespace AiBenchmarkAPI.Controllers;
 
@@ -11,52 +13,29 @@ namespace AiBenchmarkAPI.Controllers;
 public class SubjectsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly SubjectService _subjectService;
 
-    public SubjectsController(ApplicationDbContext context)
+    public SubjectsController(ApplicationDbContext context, SubjectService subjectService)
     {
         _context = context;
+        _subjectService = subjectService;
     }
 
     [HttpGet]
-    public IActionResult GetSubjects()
+    public ActionResult<IEnumerable<SubjectDto>> GetSubjects()
     {
-        var subjects = _context.Subjects.Include(s => s.Topics).Select(subject => new SubjectDto
-        {
-            Id = subject.Id,
-            Name = subject.Name,
-            Description = subject.Description,
-
-            Topics = subject.Topics.Select(topic => new TopicDto
-            {
-                Id = topic.Id,
-                Name = topic.Name,
-                Description = topic.Description
-            }).ToList()
-        }).ToList();
-
-        return Ok(subjects);
+        var subjects = _context.Subjects.Include(s => s.Topics).ToList().Select(SubjectMapper.ToDto).ToList();
+        return subjects;
     }
 
     [HttpPost]
     public IActionResult CreateSubject(CreateSubjectDto dto)
     {
-        var subject = new Subject
-        {
-            Name = dto.Name,
-            Description = dto.Description
-        };
-        _context.Subjects.Add(subject);
-        _context.SaveChanges();
-        var response = new SubjectDto
-        {
-            Id = subject.Id,
-            Name = subject.Name,
-            Description = subject.Description
-        };
-
+        var response = _subjectService.Create(dto);
+        
         return CreatedAtAction(
             nameof(GetSubjects),
-            new { id = subject.Id },
+            new { id = response.Id },
             response);
     }
 
@@ -85,18 +64,10 @@ public class SubjectsController : ControllerBase
         {
             return NotFound();
         }
-        subject.Name = dto.Name;
-        subject.Description = dto.Description;
-        
 
+        SubjectMapper.UpdateEntity(subject, dto);
         _context.SaveChanges();
-        var response = new SubjectDto
-        {
-            Id = subject.Id,
-            Name = subject.Name,
-            Description = subject.Description
-        };
-        return Ok(response);
+        return Ok(SubjectMapper.ToDto(subject));
     }
 
     [HttpPatch("{id}")]
@@ -120,7 +91,6 @@ public class SubjectsController : ControllerBase
         }
 
         _context.SaveChanges();
-
         return Ok(subject);
     }
 }

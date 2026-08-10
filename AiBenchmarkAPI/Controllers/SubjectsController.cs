@@ -24,8 +24,19 @@ public class SubjectsController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<SubjectDto>> GetSubjects()
     {
-        var subjects = _context.Subjects.Include(s => s.Topics).ToList().Select(SubjectMapper.ToDto).ToList();
-        return subjects;
+        var subjects = _subjectService.GetAll();
+        return Ok(subjects);
+    }
+
+    [HttpGet("{id}")]
+    public IActionResult GetSubject(int id)
+    {
+        var subject = _subjectService.GetById(id);
+        if (subject == null)
+        {
+            return NotFound();
+        }
+        return Ok(subject);
     }
 
     [HttpPost]
@@ -34,7 +45,7 @@ public class SubjectsController : ControllerBase
         var response = _subjectService.Create(dto);
         
         return CreatedAtAction(
-            nameof(GetSubjects),
+            nameof(GetSubject),
             new { id = response.Id },
             response);
     }
@@ -42,55 +53,37 @@ public class SubjectsController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult DeleteSubject(int id)
     {
-        var subject = _context.Subjects.Find(id);
+        var deleted = _subjectService.Delete(id);
 
-        if (subject == null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        _context.Subjects.Remove(subject);
-        _context.SaveChanges();
-
         return NoContent();
     }
 
     [HttpPut("{id}")]
     public IActionResult UpdateSubject(int id, UpdateSubjectDto dto)
     {
-        var subject = _context.Subjects.Find(id);
+        var subject = _subjectService.Update(id, dto);
 
         if (subject == null)
         {
             return NotFound();
         }
 
-        SubjectMapper.UpdateEntity(subject, dto);
-        _context.SaveChanges();
-        return Ok(SubjectMapper.ToDto(subject));
+        return Ok(subject);
     }
 
     [HttpPatch("{id}")]
-    public IActionResult PatchSubject(int id, Subject patch)
+    public IActionResult PatchSubject(int id, PatchSubjectDto dto)
     {
-        var subject = _context.Subjects.Find(id);
+        var subject = _subjectService.Patch(id, dto);
 
         if (subject == null)
         {
             return NotFound();
         }
-
-        if (!string.IsNullOrEmpty(patch.Name))
-        {
-            subject.Name = patch.Name;
-        }
-
-        if (!string.IsNullOrEmpty(patch.Description))
-        {
-            subject.Description = patch.Description;
-        }
-
-        _context.SaveChanges();
         return Ok(subject);
     }
 }

@@ -35,4 +35,16 @@ public static class SubjectMapper
         subject.Name = dto.Name;
         subject.Description = dto.Description;
     }
+
+    public static void PatchEntity(Subject subject, PatchSubjectDto dto)
+    {
+        if(dto.Name != null)
+        {
+            subject.Name = dto.Name;
+        }
+        if(dto.Description != null)
+        {
+            subject.Description = dto.Description;
+        }
+    }
 }

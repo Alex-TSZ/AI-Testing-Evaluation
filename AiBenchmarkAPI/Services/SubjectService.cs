@@ -13,17 +13,22 @@ public class SubjectService
         _context = context;
     }
 
-    public SubjectDto Create(CreateSubjectDto dto)
+    public async Task<SubjectDto?> CreateAsync(CreateSubjectDto dto)
     {
+        var existingSubject = await _context.Subjects.FirstOrDefaultAsync(s => s.Name.ToLower() == dto.Name.ToLower());
+        if(existingSubject != null)
+        {
+            return null;
+        }
         var subject = SubjectMapper.ToEntity(dto);
         _context.Subjects.Add(subject);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return SubjectMapper.ToDto(subject);
     }
 
-    public SubjectDto? GetById(int id)
+    public async Task<SubjectDto?> GetByIdAsync(int id)
     {
-        var subject = _context.Subjects.Include(s => s.Topics).FirstOrDefault(s => s.Id == id);
+        var subject = await _context.Subjects.Include(s => s.Topics).FirstOrDefaultAsync(s => s.Id == id);
         
         if (subject == null)
         {
@@ -32,16 +37,16 @@ public class SubjectService
         return SubjectMapper.ToDto(subject);
     }
 
-    public List<SubjectDto> GetAll()
+    public async Task<List<SubjectDto>> GetAllAsync()
     {
-        var subject = _context.Subjects.Include(s => s.Topics).ToList();
+        var subject = await _context.Subjects.Include(s => s.Topics).ToListAsync();
 
         return subject.Select(SubjectMapper.ToDto).ToList();
     }
 
-    public SubjectDto? Update(int id, UpdateSubjectDto dto)
+    public async Task<SubjectDto?> UpdateAsync(int id, UpdateSubjectDto dto)
     {
-        var subject = _context.Subjects.Find(id);
+        var subject = await _context.Subjects.FindAsync(id);
         
         if (subject == null)
         {
@@ -49,13 +54,13 @@ public class SubjectService
         }
 
         SubjectMapper.UpdateEntity(subject, dto);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return SubjectMapper.ToDto(subject);
     }
 
-    public SubjectDto? Patch(int id, PatchSubjectDto dto)
+    public async Task<SubjectDto?> PatchAsync(int id, PatchSubjectDto dto)
     {
-        var subject = _context.Subjects.Find(id);
+        var subject = await _context.Subjects.FindAsync(id);
         
         if (subject == null)
         {
@@ -63,20 +68,20 @@ public class SubjectService
         }
 
         SubjectMapper.PatchEntity(subject, dto);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return SubjectMapper.ToDto(subject);
     }
 
-    public bool Delete(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
-        var subject = _context.Subjects.Find(id);
+        var subject = await _context.Subjects.FindAsync(id);
         
         if (subject == null)
         {
             return false;
         }
         _context.Subjects.Remove(subject);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return true;
     }
 }

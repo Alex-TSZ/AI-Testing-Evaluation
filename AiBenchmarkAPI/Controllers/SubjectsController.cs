@@ -22,16 +22,16 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<SubjectDto>> GetSubjects()
+    public async Task<ActionResult<IEnumerable<SubjectDto>>> GetSubjects()
     {
-        var subjects = _subjectService.GetAll();
+        var subjects = await _subjectService.GetAllAsync();
         return Ok(subjects);
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetSubject(int id)
+    public async Task<IActionResult> GetSubject(int id)
     {
-        var subject = _subjectService.GetById(id);
+        var subject = await _subjectService.GetByIdAsync(id);
         if (subject == null)
         {
             return NotFound();
@@ -40,10 +40,13 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateSubject(CreateSubjectDto dto)
+    public async Task<IActionResult> CreateSubject(CreateSubjectDto dto)
     {
-        var response = _subjectService.Create(dto);
-        
+        var response = await _subjectService.CreateAsync(dto);
+        if(response == null)
+        {
+            return Conflict("A subject with this name already exist.");
+        }
         return CreatedAtAction(
             nameof(GetSubject),
             new { id = response.Id },
@@ -51,9 +54,9 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public IActionResult DeleteSubject(int id)
+    public async Task<IActionResult> DeleteSubject(int id)
     {
-        var deleted = _subjectService.Delete(id);
+        var deleted = await _subjectService.DeleteAsync(id);
 
         if (!deleted)
         {
@@ -63,9 +66,9 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateSubject(int id, UpdateSubjectDto dto)
+    public async Task<IActionResult> UpdateSubject(int id, UpdateSubjectDto dto)
     {
-        var subject = _subjectService.Update(id, dto);
+        var subject = await _subjectService.UpdateAsync(id, dto);
 
         if (subject == null)
         {
@@ -76,9 +79,9 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public IActionResult PatchSubject(int id, PatchSubjectDto dto)
+    public async Task<IActionResult> PatchSubject(int id, PatchSubjectDto dto)
     {
-        var subject = _subjectService.Patch(id, dto);
+        var subject = await _subjectService.PatchAsync(id, dto);
 
         if (subject == null)
         {

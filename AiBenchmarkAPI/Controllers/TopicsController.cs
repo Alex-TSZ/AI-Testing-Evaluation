@@ -1,32 +1,41 @@
 using AiBenchmarkAPI.Data;
+using AiBenchmarkAPI.Dtos;
 using AiBenchmarkAPI.Models;
+using AiBenchmarkAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AiBenchmarkAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/subjects/{subjectId}/topics")]
 public class TopicsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly TopicService _topicService;
 
-    public TopicsController(ApplicationDbContext context)
+    public TopicsController(TopicService topicService)
     {
-        _context = context;
+        _topicService = topicService;
     }
 
-    [HttpGet]
-    public IActionResult GetTopics()
+    [HttpGet("{id}")]
+    public IActionResult GetTopic(int subjectId, int id)
     {
-        return Ok(_context.Topics.ToList());
+        return Ok();
     }
 
     [HttpPost]
-    public IActionResult CreateTopic(Topic topic)
+    public async Task<IActionResult> CreateTopic(int subjectId, CreateTopicDto  dto)
     {
-        _context.Topics.Add(topic);
-        _context.SaveChanges();
-
-        return Ok(topic);
+        var response = await _topicService.CreateAsync(subjectId, dto);
+        if(response == null)
+        {
+            return NotFound($"Subject {subjectId} was not found.");
+        }
+        return CreatedAtAction(nameof(GetTopic), new
+        {
+            subjectId = response.SubjectId,
+            id = response.Id
+        },
+        response);
     }
 }

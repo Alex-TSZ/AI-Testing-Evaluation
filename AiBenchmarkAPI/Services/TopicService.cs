@@ -27,39 +27,55 @@ public class TopicService
         await _context.SaveChangesAsync();
         return TopicMapper.ToDto(topic);
     }
-    /*
-    public async Task<SubjectDto?> GetByIdAsync(int id)
+    
+    public async Task<List<TopicDto>?> GetBySubjectAsync(int subjectId)
     {
-        var subject = await _context.Subjects.Include(s => s.Topics).FirstOrDefaultAsync(s => s.Id == id);
-        
-        if (subject == null)
+        var subjectExists = await _context.Subjects.AnyAsync(s => s.Id == subjectId);
+        if (!subjectExists)
         {
             return null;
         }
-        return SubjectMapper.ToDto(subject);
+        var topics = await _context.Topics.Where(t => t.SubjectId == subjectId).ToListAsync();
+        return topics.Select(TopicMapper.ToDto).ToList();
     }
 
-    public async Task<List<SubjectDto>> GetAllAsync()
+    public async Task<TopicDto?> GetByIdAsync(int subjectId, int topicId)
     {
-        var subject = await _context.Subjects.Include(s => s.Topics).ToListAsync();
-
-        return subject.Select(SubjectMapper.ToDto).ToList();
+        var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == topicId && t.SubjectId == subjectId);
+        if (topic == null)
+        {
+            return null;
+        }
+        return TopicMapper.ToDto(topic);
     }
 
-    public async Task<SubjectDto?> UpdateAsync(int id, UpdateSubjectDto dto)
+    public async Task<TopicDto?> UpdateAsync(int subjectId, int topicId, UpdateTopicDto dto)
     {
-        var subject = await _context.Subjects.FindAsync(id);
+        var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == topicId && t.SubjectId==subjectId);
         
-        if (subject == null)
+        if (topic == null)
         {
             return null;
         }
 
-        SubjectMapper.UpdateEntity(subject, dto);
+        TopicMapper.UpdateEntity(topic, dto);
         await _context.SaveChangesAsync();
-        return SubjectMapper.ToDto(subject);
+        return TopicMapper.ToDto(topic);
     }
 
+    public async Task<bool> DeleteAsync(int subjectId, int topicId)
+    {
+        var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == topicId && t.SubjectId==subjectId);
+        
+        if (topic == null)
+        {
+            return false;
+        }
+        _context.Topics.Remove(topic);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+    /*
     public async Task<SubjectDto?> PatchAsync(int id, PatchSubjectDto dto)
     {
         var subject = await _context.Subjects.FindAsync(id);
@@ -72,19 +88,6 @@ public class TopicService
         SubjectMapper.PatchEntity(subject, dto);
         await _context.SaveChangesAsync();
         return SubjectMapper.ToDto(subject);
-    }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var subject = await _context.Subjects.FindAsync(id);
-        
-        if (subject == null)
-        {
-            return false;
-        }
-        _context.Subjects.Remove(subject);
-        await _context.SaveChangesAsync();
-        return true;
     }
     */
 }

@@ -17,10 +17,26 @@ public class TopicsController : ControllerBase
         _topicService = topicService;
     }
 
-    [HttpGet("{id}")]
-    public IActionResult GetTopic(int subjectId, int id)
+    [HttpGet()]
+    public async Task<IActionResult> GetTopics(int subjectId)
     {
-        return Ok();
+        var topics = await _topicService.GetBySubjectAsync(subjectId);
+        if(topics == null)
+        {
+            return NotFound($"Subject {subjectId} was not found.");
+        }
+        return Ok(topics);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetTopic(int subjectId, int id)
+    {
+        var topic = await _topicService.GetByIdAsync(subjectId, id);
+        if(topic == null)
+        {
+            return NotFound($"Topic {id} was not found or is not apart of subjects {subjectId} topics.");
+        }
+        return Ok(topic);
     }
 
     [HttpPost]
@@ -37,5 +53,27 @@ public class TopicsController : ControllerBase
             id = response.Id
         },
         response);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateTopic(int subjectId, int id, UpdateTopicDto dto)
+    {
+        var topic = await _topicService.UpdateAsync(subjectId,  id, dto);
+        if(topic == null)
+        {
+            return NotFound($"Topic {id} was not found or  not apart of subject {subjectId}");
+        }
+        return Ok(topic);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTopic(int subjectId, int id)
+    {
+        var deleted = await _topicService.DeleteAsync(subjectId,  id);
+        if (!deleted)
+        {
+            return NotFound($"Task {id} was not found in subject {subjectId}");
+        }
+        return NoContent();
     }
 }

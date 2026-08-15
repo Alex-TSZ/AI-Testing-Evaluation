@@ -1,7 +1,7 @@
 # AI-Testing-Evaluation
 A platform to test different AI models on simular or different datasets.
 
-Define the problem<br>
+Use:<br>
 This platform evaluates AI models across different tasks, subjects, and difficulty levels. It supports benchmarking, model comparison, analytics, and optional training dataset generation. Results are stored and analyzed to measure model performance across various domains and capabilities.
 
 Identify main objects<br>

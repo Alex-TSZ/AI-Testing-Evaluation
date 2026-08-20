@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Subject> Subjects { get; set; }
     public DbSet<Topic> Topics { get; set; }
+    public DbSet<Question> Questions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

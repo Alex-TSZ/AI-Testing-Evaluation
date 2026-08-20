@@ -75,19 +75,4 @@ public class TopicService
         await _context.SaveChangesAsync();
         return true;
     }
-    /*
-    public async Task<SubjectDto?> PatchAsync(int id, PatchSubjectDto dto)
-    {
-        var subject = await _context.Subjects.FindAsync(id);
-        
-        if (subject == null)
-        {
-            return null;
-        }
-
-        SubjectMapper.PatchEntity(subject, dto);
-        await _context.SaveChangesAsync();
-        return SubjectMapper.ToDto(subject);
-    }
-    */
 }

@@ -1,6 +1,7 @@
 using AiBenchmarkAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using AiBenchmarkAPI.Services;
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,9 +11,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 builder.Services.AddScoped<SubjectService>();
 builder.Services.AddScoped<TopicService>();
+builder.Services.AddScoped<QuestionService>();
 
 var app = builder.Build();
 

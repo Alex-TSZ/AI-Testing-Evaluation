@@ -16,7 +16,8 @@ public static class SubjectMapper
                 {
                     Id = topic.Id,
                     Name = topic.Name,
-                    Description = topic.Description
+                    Description = topic.Description,
+                    SubjectId = topic.SubjectId
                 }).ToList()
         };
     }

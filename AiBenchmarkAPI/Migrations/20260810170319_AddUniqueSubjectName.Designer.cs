@@ -3,6 +3,7 @@ using AiBenchmarkAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AiBenchmarkAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260810170319_AddUniqueSubjectName")]
+    partial class AddUniqueSubjectName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -20,37 +23,6 @@ namespace AiBenchmarkAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("AiBenchmarkAPI.Models.Question", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("EstimatedDifficulty")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Prompt")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("QuestionType")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TestedDifficulty")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TopicId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TopicId");
-
-                    b.ToTable("Questions");
-                });
 
             modelBuilder.Entity("AiBenchmarkAPI.Models.Subject", b =>
                 {
@@ -100,17 +72,6 @@ namespace AiBenchmarkAPI.Migrations
                     b.ToTable("Topics");
                 });
 
-            modelBuilder.Entity("AiBenchmarkAPI.Models.Question", b =>
-                {
-                    b.HasOne("AiBenchmarkAPI.Models.Topic", "Topic")
-                        .WithMany("Questions")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Topic");
-                });
-
             modelBuilder.Entity("AiBenchmarkAPI.Models.Topic", b =>
                 {
                     b.HasOne("AiBenchmarkAPI.Models.Subject", "Subject")
@@ -125,11 +86,6 @@ namespace AiBenchmarkAPI.Migrations
             modelBuilder.Entity("AiBenchmarkAPI.Models.Subject", b =>
                 {
                     b.Navigation("Topics");
-                });
-
-            modelBuilder.Entity("AiBenchmarkAPI.Models.Topic", b =>
-                {
-                    b.Navigation("Questions");
                 });
 #pragma warning restore 612, 618
         }
